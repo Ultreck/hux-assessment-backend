@@ -8,7 +8,8 @@ const authenticateUsers = (email) => {
   return User.findOne({ email })
     .select("+password")
     .then((response) => {
-      if (!response) {
+      
+      if (response === null) {
         return {
           status: 404,
           success: false,
@@ -24,23 +25,32 @@ const authenticateUsers = (email) => {
 const loginUsers = async (req, res) => {
   const { email, password } = req.body;
   const user = await authenticateUsers(email);
+  console.log(user);
 
   if (user) {
-    const token = generateToken({ id: user._id });
-    res.json({ data: user, token, statuscode:200, message: "You are Successfully Logged in", isSuccess: true });
+    bcrypt.compare(password, user.password).then((response) => {
+      if(response){
+        const token = generateToken({ id: user._id });
+        res.json({ data: user, token, statuscode:200, message: "You are Successfully Logged in", isSuccess: true });
+      }else{
+        res.json({statuscode:400, message: "Incorrect password", isSuccess: false });
+      }
+
+      
+    })
   } else {
-    res.status(401).json({ message: "Invalid credentials" });
+    res.json({ message: "Invalid credentials" });
   }
 };
 
 // Function handling registration
 const registerUsers = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, fullName } = req.body;
   User.findOne({ email }).then((resp) => {
     if (resp) {
       res.json({
         status: 409,
-        message: "Account already exist",
+        message: "Account already exist. Please create another account",
         success: false,
       });
     } else {
