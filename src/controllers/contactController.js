@@ -2,7 +2,27 @@ const Contacts = require("../models/contactModel");
 
 // Function handling the process of getting all created contacts
 const getContacts = (req, res) => {
-  Contacts.find()
+  const {id} = req.params;  
+  Contacts.find({userId:id})
+    .sort({ createdAt: -1 })
+    .then((response) => {
+      res.json({
+        data: response,
+        status: 200,
+        isSuccess: true,
+      });
+    })
+    .catch((error) => {
+      res.status(401).json({
+        message: error.message,
+        isSuccess: false,
+      });
+    });
+};
+// Function handling the process of getting all created contacts
+const getOnlyOneContact = (req, res) => {
+  const {id} = req.params;  
+  Contacts.find({_id:id})
     .sort({ createdAt: -1 })
     .then((response) => {
       res.json({
@@ -21,18 +41,19 @@ const getContacts = (req, res) => {
 
 // Function handling the process of creating new contacts
 const createContacts = (req, res) => {
-  const { firstName, lastName, phoneNumber } = req.body;
+  const { firstName, lastName, phoneNumber, email, userId } = req.body;
   Contacts.create({
     firstName: firstName,
     lastName: lastName,
     phoneNumber: phoneNumber,
+    email, 
+    userId
   })
     .then((contact) => {
-      console.log(contact);
       res.json({
         statusCode: 201,
         isSuccess: true,
-        data: contact,
+        message: "Contact is Created Successfully",
       });
     })
     .catch((error) => {
@@ -47,13 +68,16 @@ const createContacts = (req, res) => {
 
 // Function handling the process of updating contacts
 const updateContacts = (req, res) => {
-  const { updatedContact, id } = req.body;
-  Contacts.updateOne({ _id: id }, { $set: updatedContact }, { new: true })
+  const { payload, id } = req.body;
+  console.log(payload);
+  console.log(id);
+  
+  Contacts.updateOne({ _id: id }, { $set: payload }, { new: true })
     .then((result) => {
       res.json({
         statusCode: 200,
         isSuccess: true,
-        data: result,
+        message: "Contact is Successfully updated",
       });
     })
     .catch((error) => {
@@ -68,12 +92,14 @@ const updateContacts = (req, res) => {
 // Function handling the process of deleting contacts
 const deleteContact = (req, res) => {
   const { id } = req.params;
-  Contacts.deleteOne({ id: id })
+  console.log(id);
+
+  Contacts.deleteOne({ _id: id })
     .then((result) => {
       res.json({
         statusCode: 200,
         isSuccess: true,
-        data: result,
+        message: "Contact is Successfully deleted",
       });
     })
     .catch((error) => {
@@ -85,4 +111,4 @@ const deleteContact = (req, res) => {
     });
 };
 
-module.exports = { getContacts, createContacts, updateContacts, deleteContact };
+module.exports = { getContacts, createContacts, getOnlyOneContact, updateContacts, deleteContact };

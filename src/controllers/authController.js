@@ -27,7 +27,7 @@ const loginUsers = async (req, res) => {
 
   if (user) {
     const token = generateToken({ id: user._id });
-    res.json({ data: user, token });
+    res.json({ data: user, token, statuscode:200, message: "You are Successfully Logged in", isSuccess: true });
   } else {
     res.status(401).json({ message: "Invalid credentials" });
   }
@@ -49,7 +49,7 @@ const registerUsers = async (req, res) => {
         .save()
         .then((result) => {
           const token = generateToken({ id: result._id });
-          res.status(201).json({ data: result, token });
+          res.status(201).json({ data: result, token,  message: "Account is successfully created",  isSuccess: true});
         })
         .catch((error) => {
           res.status(500).json({ message: error.message });
